@@ -1,12 +1,12 @@
 package lt.vpranckaitis.yamlg.game
 
-import lt.vpranckaitis.math.Math._
-import java.lang.Math._
-import scala.collection.immutable.HashSet
 import scala.annotation.tailrec
-import akka.util.HashCode
-import scala.collection._
+import scala.collection.{Seq, Set}
+import scala.collection.immutable.HashSet
+import scala.collection.mutable
 import scala.util.hashing.MurmurHash3
+
+import lt.vpranckaitis.math.Math.{DistanceFunction, manhattanDistance}
 
 object Board {
   val height = 8
@@ -24,7 +24,7 @@ object Board {
   
   def distanceFunction: DistanceFunction = manhattanDistance
   
-  def distance(x: Int, y: Int) = distanceFunction(width, height)(x, y)
+  def distance1(x: Int, y: Int) = distanceFunction(width, height)(x, y)
   
   val minDistance = { 
     def dist = distanceFunction(0, 0)
@@ -36,14 +36,18 @@ object Board {
     everyDistance.reduce(_ + _)
   }
   
-  def apply(arrangement: String, side: Char, dir: Boolean) = {
+  def apply(arrangement: String): Board = {
+    apply(arrangement, '1', true)
+  }
+  
+  def apply(arrangement: String, side: Char, dir: Boolean): Board = {
     val grouped = arrangement.zipWithIndex groupBy { _._1 }
     
     def posToCoord(a: Int) = (a % width, a / width)
     
     val own = HashSet((grouped('1') map { t => posToCoord(t._2) }): _*)
     val other = HashSet(grouped('2') map { t => posToCoord(t._2) }: _*)
-    new Board(own, other)
+    new Board(own, other, (0, 0, 0, 0), null)
   }
   
   def isValid(arrangement: String) = {
@@ -62,23 +66,40 @@ object Board {
   }
 }
 
-case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)]) {
+case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], val before: (Int, Int, Int, Int), val parent: Board) {
   import lt.vpranckaitis.yamlg.game.Board._
   
   def add(xy1: (Int, Int), xy2: (Int, Int)) = (xy1._1 + xy2._1, xy1._2 + xy2._1)
   
+  lazy val ownList = own.toList
+  
+  lazy val positionSum = ownList reduce { add(_, _) }
+  
   lazy val distance = {
     def dist = distanceFunction(Board.width, Board.height)
-    own map { xy => dist(xy._1, xy._2) } reduce { _ + _ }
+    ownList map { xy => dist(xy._1, xy._2) } reduce { _ + _ }
+  }
+  
+  lazy val diagonalDistance = {
+    ownList map { xy => Math.max(xy._1, xy._2) - Math.min(xy._1, xy._2) } reduce { _ + _ }
+  }
+  
+  lazy val vecticalDistance = {
+    ownList map { Board.height - _._2 } reduce { _ + _ }
+  }
+  
+  lazy val scatter = {
+    def dist = distanceFunction(centre._1, centre._2)
+    ownList map { xy => dist(xy._1, xy._2) } reduce { _ + _ }
   }
   
   lazy val centre = {
-    val sum = own reduce { add(_,  _) } 
-    (sum._1 / pieces, sum._2 / pieces)
+    val sum = ownList reduce { add(_,  _) } 
+    (positionSum._1/ pieces, positionSum._2/ pieces)
   }
   
   def move(x1: Int, y1: Int)(x2: Int, y2: Int) = {
-    new Board(own - Tuple2(x1, y1) + Tuple2(x2, y2), other)
+    new Board(own - Tuple2(x1, y1) + Tuple2(x2, y2), other, (x1, y1, x2, y2), this)
   }
   
   def step(p: Int, maxJumps: Int, filterDistance: Double) = {
@@ -117,45 +138,29 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)]) {
     loop(Set((this, 0)), Nil) reverse
   }
   
-  
-
-  def traverse(maxDepth: Int) = {
-    @tailrec
-    def traverseTR(toVisit: Seq[Board], d: Seq[Int], visited: HashSet[Board], accumulator: Seq[Board]): Seq[Board] = {
-      if(toVisit.isEmpty) {
-        accumulator
-      } else  {
-        val next = toVisit.head
-        val nextDepth = d.head
-        val succ = if (nextDepth < maxDepth) (next.step(1, 5, 1000000).view filterNot { visited.contains } filterNot { toVisit.contains }).toSeq else Seq.empty
-        val succDepth = succ map { _ => nextDepth + 1}
-        // DFS :
-        traverseTR(succ ++ toVisit.tail, succDepth ++ d.tail, visited + next, next +: accumulator)
-        
-      }
-    }
-    
-    traverseTR(Seq(this), Seq(0), HashSet.empty, Seq.empty).reverse
-  }
-  
-  def dfss(maxDepth: Int, visited: mutable.HashSet[Board]): Int = {
+  def dfss(maxDepth: Int, visited: mutable.HashSet[Board], queue: mutable.PriorityQueue[Double]): (Board, Double) = {
     
     visited += this
     
     if (maxDepth == 0) {
-      1
+      (this, distance + diagonalDistance * 0.5 + scatter *0.5 + vecticalDistance * 0.78)
     } else {
       def inside(x: Int, y: Int) = { x >= 0 && x < Board.width && y >= 0 && y < Board.height}
       def nextMoves(x: Int, y: Int) = {
-        moves.view filter { xy => 
+        moves filter { xy => 
           inside(x + xy._1, y + xy._2) && 
           !own.contains((x + xy._1, y + xy._2)) && 
           !other.contains((x + xy._1, y + xy._2))
         } map { xy => this.move(x, y)(x + xy._1, y + xy._2) } filterNot { x => visited.contains(x) }
       }
-      (for (xy <- own.toSeq.view) yield { 
-        (nextMoves(xy._1, xy._2).view map { _.dfss(maxDepth - 1, visited) }).foldLeft(0) { _ + _ }
-      }).foldLeft(1) { _ + _ }
+      val bs = (for (xy <- own.toSeq) yield { 
+        nextMoves(xy._1, xy._2) map { _.dfss(maxDepth - 1, visited, queue) } 
+      }).flatten
+      //println(bs)
+        val best = bs minBy { _._2 }
+        (best._1, best._2)
+      
+       
     }
   }
   

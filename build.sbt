@@ -2,7 +2,8 @@ lazy val commonSettings = Seq(
   organization := "lt.vpranckaitis",
   name := "yamlg",
   version := "0.1.0",
-  scalaVersion := "2.11.5"
+  scalaVersion := "2.11.5",
+  scalacOptions += "-optimize"
 )
 
 lazy val repositories =  Seq(

@@ -184,10 +184,10 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
       y <- 0 until Board.width
       x <- 0 until Board.height
     } yield if (own(x, y)) '1' else if (other(x, y)) '2' else '0'
-    val strBuild = chars.foldLeft(new StringBuilder(Board.width * Board.height)) {
+    val strBuild = chars.foldLeft(new StringBuilder(Board.width * Board.height * 2)) {
       (acc: StringBuilder, b: Char) => acc.append(b)
     }
-    strBuild.toString().grouped(8) mkString "\n"
+    "\n" ++ strBuild.toString().grouped(Board.width).mkString("\n")
   }
   
   override def equals(that: Any) = {

@@ -27,9 +27,10 @@ object Main {
     Benchmark.benchmarkSets
     Benchmark.benchmarkLoops
     
-    val board = Board("1100000000000000000000000000000000000000000000000000000000000022")
+    val board = Board("1111000011110000111100000000000000000000000022220000222200002222")
     
-    println(Exploration.alphaBeta(board, 3))
+    println(Benchmark.timer { () => println(Exploration.alphaBeta(board, 5)) })
+    
     
     //println(v5.size)
   }

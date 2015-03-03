@@ -12,6 +12,7 @@ import scala.collection._
 import scala.util.hashing.MurmurHash3
 import scala.annotation.tailrec
 import lt.vpranckaitis.math.Math
+import lt.vpranckaitis.yamlg.game.Exploration
 
 object Main {
   //implicit val system = ActorSystem("yamlg")
@@ -25,6 +26,10 @@ object Main {
     
     Benchmark.benchmarkSets
     Benchmark.benchmarkLoops
+    
+    val board = Board("1100000000000000000000000000000000000000000000000000000000000022")
+    
+    println(Exploration.alphaBeta(board, 3))
     
     //println(v5.size)
   }

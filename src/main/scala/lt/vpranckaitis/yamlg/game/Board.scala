@@ -107,14 +107,18 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     (positionSum._1/ pieces, positionSum._2/ pieces)
   }
   
-  lazy val score = distance * 5 + diagonalDistance * 0.25 + scatter * 5 + vecticalDistance * 0.6
+  lazy val score = 100.0 / distance
   
   def move(x1: Int, y1: Int)(x2: Int, y2: Int) = {
-    new Board(own - Tuple2(x1, y1) + Tuple2(x2, y2), other, (x1, y1, x2, y2), this)
+    if (own.contains((x1, y1))) {
+      new Board(own - Tuple2(x1, y1) + Tuple2(x2, y2), other, (x1, y1, x2, y2), this)
+    } else {
+      new Board(own, other - Tuple2(x1, y1) + Tuple2(x2, y2), (x1, y1, x2, y2), this)
+    }
   }
   
-  def getChildren(player: Boolean) = {
-    val activeSide = if (player) own else other
+  def getChildren(cpuTurn: Boolean = true) = {
+    val activeSide = if (cpuTurn) own else other
     val jumping = activeSide flatMap { xy => jump(xy._1, xy._2) }
     val stepping = activeSide flatMap { xy => step(xy._1, xy._2) }
     jumping ++ stepping
@@ -133,7 +137,6 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
           this.move(x0, y0)(x1, y1) 
         }
       } else {
-        println(posToCoord(queue.head))
         val (x1 ,y1) = posToCoord(queue.head)
         
         val succ = for { 
@@ -146,7 +149,11 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
         } yield pos
         
         if (succ.isEmpty) {
-          val acc1 = queue.head +: acc
+          val acc1 = if (queue.head != coordToPos(x0, y0)) {
+            queue.head +: acc
+          } else {
+            acc
+          }
           jumpRec(queue.tail, visited, acc1)
         } else {
           val queue1 = queue.tail ++ succ

@@ -21,6 +21,12 @@ object Board {
   
   val moves = Seq((1, 0), (-1, 0), (0, 1), (0, -1))
   val movesForward = Seq((1, 0), (0, 1))
+  val winSet = {
+    for {
+      x <- 4 to 7
+      y <- 5 to 7
+    } yield (x, y)
+  }.toSet
   
   def distanceFunction: DistanceFunction = manhattanDistance
   
@@ -43,17 +49,20 @@ object Board {
   def apply(arrangement: String, side: Char, dir: Boolean): Board = {
     val grouped = arrangement.zipWithIndex groupBy { _._1 }
     
-    def posToCoord(a: Int) = (a % width, a / width)
-    
     val own = HashSet((grouped('1') map { t => posToCoord(t._2) }): _*)
     val other = HashSet(grouped('2') map { t => posToCoord(t._2) }: _*)
     new Board(own, other, (0, 0, 0, 0), null)
   }
   
+  def posToCoord(p: Int) = (p % width, p / width)
+  def coordToPos(x: Int, y: Int) = y * width + x
+  
   def isValid(arrangement: String) = {
     (arrangement.length == height * width) && 
       List(cpuSquare, playerSquare).forall(c => (arrangement.count(_ == c) == pieces))
   }
+  
+  def inside(x: Int, y: Int) = { x >= 0 && x < Board.width && y >= 0 && y < Board.height}
   
   object Algorithms {
     def stringHash(b: Board) = { //slow
@@ -98,70 +107,69 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     (positionSum._1/ pieces, positionSum._2/ pieces)
   }
   
+  lazy val score = distance * 5 + diagonalDistance * 0.25 + scatter * 5 + vecticalDistance * 0.6
+  
   def move(x1: Int, y1: Int)(x2: Int, y2: Int) = {
     new Board(own - Tuple2(x1, y1) + Tuple2(x2, y2), other, (x1, y1, x2, y2), this)
   }
   
-  def step(p: Int, maxJumps: Int, filterDistance: Double) = {
-    def inside(x: Int, y: Int) = { x >= 0 && x < Board.width && y >= 0 && y < Board.height} 
-    
-    def neighbouringBoards(x: Int, y: Int) = {
-      
-      val moves = List((1, 0), (0, 1), (-1, 0), (0, -1))
-      
-      def moveFromCurrent: (Int, Int) => Board = move(x, y)
-      
-      val stepAway = for {
-        (dx, dy) <- moves
-        if inside(x + dx, y + dy) && !own(x + dx, y + dy) && !other(x + dx, y + dy) 
-      } yield moveFromCurrent(x + dx, y + dy)
-      stepAway
-    }
-    
-    val cascadedBoards = for {
-      (x, y) <- own
-    } yield neighbouringBoards(x, y)
-    
-    cascadedBoards.flatten
+  def getChildren(player: Boolean) = {
+    val activeSide = if (player) own else other
+    val jumping = activeSide flatMap { xy => jump(xy._1, xy._2) }
+    val stepping = activeSide flatMap { xy => step(xy._1, xy._2) }
+    jumping ++ stepping
   }
   
-  def dfs(nn: Int): List[Board] = {
-    def childrenNotVisited(parent: Board, visited: List[Board]): Set[Board] =
-      parent.step(1, 5, 10000000) filter (x => !visited.contains(x))
-
-    @annotation.tailrec
-    def loop(stack: Set[(Board, Int)], visited: List[Board]): List[Board] = {
-      if (stack.isEmpty) visited
-      else loop((if (stack.head._2 < nn) childrenNotVisited(stack.head._1, visited).map((_, stack.head._2 + 1)) else Set()) ++ stack.tail, 
-        stack.head._1 :: visited)
-    }
-    loop(Set((this, 0)), Nil) reverse
-  }
-  
-  def dfss(maxDepth: Int, visited: mutable.HashSet[Board], queue: mutable.PriorityQueue[Double]): (Board, Double) = {
+  def jump(x0: Int, y0: Int): Seq[Board] = {
+    def canJump(x: Int, y: Int, dx: Int, dy: Int) = (own.contains((x + dx, y + dy)) || other.contains((x + dx, y + dy))) &&
+        (!own.contains((x + dx * 2, y + dy * 2)) && !other.contains((x + dx * 2, y + dy * 2))) &&
+        inside(x + dx * 2, y + dy * 2)
     
-    visited += this
-    
-    if (maxDepth == 0) {
-      (this, distance + diagonalDistance * 0.5 + scatter *0.5 + vecticalDistance * 0.78)
-    } else {
-      def inside(x: Int, y: Int) = { x >= 0 && x < Board.width && y >= 0 && y < Board.height}
-      def nextMoves(x: Int, y: Int) = {
-        moves filter { xy => 
-          inside(x + xy._1, y + xy._2) && 
-          !own.contains((x + xy._1, y + xy._2)) && 
-          !other.contains((x + xy._1, y + xy._2))
-        } map { xy => this.move(x, y)(x + xy._1, y + xy._2) } filterNot { x => visited.contains(x) }
+    @tailrec
+    def jumpRec(queue: List[Int], visited: mutable.BitSet, acc: Seq[Int]): Seq[Board] = {
+      if (queue.isEmpty) {
+        acc map { pos => 
+          val (x1, y1) = posToCoord(pos)
+          this.move(x0, y0)(x1, y1) 
+        }
+      } else {
+        println(posToCoord(queue.head))
+        val (x1 ,y1) = posToCoord(queue.head)
+        
+        val succ = for { 
+          xy <- moves
+          dx = xy._1
+          dy = xy._2
+          pos = coordToPos(x1 + dx * 2, y1 + dy * 2)
+          if canJump(x1, y1, dx, dy) &&
+          !visited.contains(pos)
+        } yield pos
+        
+        if (succ.isEmpty) {
+          val acc1 = queue.head +: acc
+          jumpRec(queue.tail, visited, acc1)
+        } else {
+          val queue1 = queue.tail ++ succ
+          visited ++= succ
+          jumpRec(queue1, visited, acc)
+        }
       }
-      val bs = (for (xy <- own.toSeq) yield { 
-        nextMoves(xy._1, xy._2) map { _.dfss(maxDepth - 1, visited, queue) } 
-      }).flatten
-      //println(bs)
-        val best = bs minBy { _._2 }
-        (best._1, best._2)
-      
-       
     }
+    
+    val pos = coordToPos(x0, y0)
+    val visited = mutable.BitSet(pos)
+    jumpRec(List(pos), visited, Seq())
+  }
+  
+  def step(x: Int, y: Int): Seq[Board] = {
+    def canStep(dx: Int, dy: Int) = inside(x + dx, y + dy) && 
+      !own.contains((x + dx, y + dy)) && 
+      !other.contains((x + dx, y + dy))
+      
+    for { 
+      xy <- moves 
+      if canStep(xy._1, xy._2)
+    } yield this.move(x, y)(x + xy._1, y + xy._2)
   }
   
   override def toString() = {
@@ -173,6 +181,15 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
       (acc: StringBuilder, b: Char) => acc.append(b)
     }
     strBuild.toString().grouped(8) mkString "\n"
+  }
+  
+  override def equals(that: Any) = {
+    if (that.getClass() == this.getClass) {
+      val t = that.asInstanceOf[Board]
+      (own.equals(t.own)) && (other.equals(t.other))
+    } else { 
+      false
+    }
   }
   
   override lazy val hashCode = {

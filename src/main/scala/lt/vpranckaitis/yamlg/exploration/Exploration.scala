@@ -1,7 +1,8 @@
-package lt.vpranckaitis.yamlg.game
+package lt.vpranckaitis.yamlg.exploration
 
 import scala.annotation.tailrec
 import scala.collection._
+import lt.vpranckaitis.yamlg.game.Board
 
 /**
  * Template method pattern for minimax with alpha-beta pruning

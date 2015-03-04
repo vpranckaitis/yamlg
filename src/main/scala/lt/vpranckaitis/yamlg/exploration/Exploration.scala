@@ -1,7 +1,8 @@
 package lt.vpranckaitis.yamlg.exploration
 
 import scala.annotation.tailrec
-import scala.collection._
+import scala.collection.Seq
+
 import lt.vpranckaitis.yamlg.game.Board
 
 /**
@@ -11,11 +12,11 @@ trait Exploration {
   
   type Score = Double
   
-  def canRecall(b: Board, maximize: Boolean): Boolean
-  def recall(b: Board, maximize: Boolean): (Score, Board)
-  def memorize(b: Board, maximize: Boolean, score: Score, target: Board): Unit
+  @inline def canRecall(b: Board, maximize: Boolean): Boolean = false
+  @inline def recall(b: Board, maximize: Boolean): (Score, Board) = (0.0, null)
+  @inline def memoize(b: Board, maximize: Boolean, score: Score, target: Board): Unit = Unit
   
-  def shouldPrune(alpha: Score, beta: Score): Boolean = alpha >= beta
+  def shouldPrune(alpha: Score, beta: Score): Boolean = false
   
   def explore(board: Board, depth: Int, maximize: Boolean = true): (Score, Board) = {
     
@@ -57,6 +58,7 @@ trait Exploration {
     
     def alphaBetaRec(b: Board, depth: Int, alpha: Score, beta: Score, maximize: Boolean): (Score, Board)  = {
       if (depth == 0) {
+        memoize(b, maximize, b.score, b)
         (b.score, b)
       } else {
         val children = b.getChildren(maximize).toSeq
@@ -68,7 +70,7 @@ trait Exploration {
         } else {
           minValue(children, depth, alpha, beta)
         }
-        memorize(b, maximize, score, leafBoard)
+        memoize(b, maximize, score, leafBoard)
         (score, leafBoard)
       }
     }

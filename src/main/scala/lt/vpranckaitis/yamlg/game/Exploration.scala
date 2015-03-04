@@ -3,15 +3,20 @@ package lt.vpranckaitis.yamlg.game
 import scala.annotation.tailrec
 import scala.collection._
 
-object Exploration {
+/**
+ * Template method pattern for minimax with alpha-beta pruning
+ */
+trait Exploration {
   
   type Score = Double
+  
+  def canRecall(b: Board, maximize: Boolean): Boolean
+  def recall(b: Board, maximize: Boolean): (Score, Board)
+  def memorize(b: Board, maximize: Boolean, score: Score, target: Board): Unit
   
   def shouldPrune(alpha: Score, beta: Score): Boolean = alpha >= beta
   
   def explore(board: Board, depth: Int, maximize: Boolean = true): (Score, Board) = {
-    
-    val memory = mutable.HashMap[(Board, Boolean), (Score, Board)]()
     
     def maxValue(seq: Seq[Board], depth: Int,  alpha: Score, beta: Score): (Score, Board) = {
       @tailrec
@@ -55,14 +60,14 @@ object Exploration {
       } else {
         val children = b.getChildren(maximize).toSeq
         
-        val (score, leafBoard) = if (memory.contains((b, maximize))) {
-          memory(b, maximize)
+        val (score, leafBoard) = if (canRecall(b, maximize)) {
+          recall(b, maximize)
         } else if (maximize) {
           maxValue(children, depth, alpha, beta)
         } else {
           minValue(children, depth, alpha, beta)
         }
-        memory.put((b, maximize), (score, leafBoard))
+        memorize(b, maximize, score, leafBoard)
         (score, leafBoard)
       }
     }

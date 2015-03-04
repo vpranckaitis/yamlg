@@ -29,7 +29,7 @@ object Main {
     
     val board = Board("1111000011110000111100000000000000000000000022220000222200002222")
     
-    println(Benchmark.timer { () => println(Exploration.explore(board, 7)) })
+    //println(Benchmark.timer { () => println(Exploration.explore(board, 7)) })
     
     
     //println(v5.size)

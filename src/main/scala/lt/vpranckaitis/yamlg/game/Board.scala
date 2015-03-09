@@ -5,8 +5,8 @@ import scala.collection.{Seq, Set}
 import scala.collection.immutable.HashSet
 import scala.collection.mutable
 import scala.util.hashing.MurmurHash3
-
 import lt.vpranckaitis.math.Math.{DistanceFunction, manhattanDistance}
+import lt.vpranckaitis.yamlg.learning.NeuralNetwork
 
 object Board {
   val height = 8
@@ -107,7 +107,7 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     (positionSum._1/ pieces, positionSum._2/ pieces)
   }
   
-  lazy val score = 100.0 / distance
+  lazy val score = NeuralNetwork.score(this)
   
   def move(x1: Int, y1: Int)(x2: Int, y2: Int) = {
     if (own.contains((x1, y1))) {
@@ -115,6 +115,13 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     } else {
       new Board(own, other - Tuple2(x1, y1) + Tuple2(x2, y2), (x1, y1, x2, y2), this)
     }
+  }
+  
+  lazy val reverse = {
+    def mirror(x: Int, y: Int) = (width - x - 1, height - y - 1)
+    val newOwn = other map { xy => mirror(xy._1, xy._2) }
+    val newOther = own map { xy => mirror(xy._1, xy._2) }
+    new Board(newOwn, newOther, (0, 0, 0, 0), null)
   }
   
   def getChildren(cpuTurn: Boolean = true) = {

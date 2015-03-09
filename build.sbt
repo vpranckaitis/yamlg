@@ -7,7 +7,9 @@ lazy val commonSettings = Seq(
 )
 
 lazy val repositories =  Seq(
-	resolvers += "org.sedis" at "http://pk11-scratch.googlecode.com/svn/trunk"
+	resolvers += "org.sedis" at "http://pk11-scratch.googlecode.com/svn/trunk",
+	resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+    resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
 )
 
 lazy val dependencies = Seq(
@@ -16,7 +18,10 @@ lazy val dependencies = Seq(
   libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.9",
   
   libraryDependencies += "io.spray" %% "spray-routing" % "1.3.1",
-  libraryDependencies += "io.spray" %% "spray-can" % "1.3.1"
+  libraryDependencies += "io.spray" %% "spray-can" % "1.3.1",
+  
+  libraryDependencies += "org.scalanlp" %% "breeze" % "0.10",
+  libraryDependencies += "org.scalanlp" %% "breeze-natives" % "0.10"
 )
 
 lazy val dependenciesTest = Seq(

@@ -12,9 +12,9 @@ trait Exploration {
   
   type Score = Double
   
-  @inline def canRecall(b: Board, maximize: Boolean): Boolean = false
-  @inline def recall(b: Board, maximize: Boolean): (Score, Board) = (0.0, null)
-  @inline def memoize(b: Board, maximize: Boolean, score: Score, target: Board): Unit = Unit
+  def canRecall(b: Board, maximize: Boolean): Boolean = false
+  def recall(b: Board, maximize: Boolean): (Score, Board) = (0.0, null)
+  def memoize(b: Board, maximize: Boolean, score: Score, target: Board): Unit = Unit
   
   def shouldPrune(alpha: Score, beta: Score): Boolean = false
   

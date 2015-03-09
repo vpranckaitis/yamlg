@@ -47,7 +47,7 @@ object Board {
   }
   
   def apply(arrangement: String, side: Char, dir: Boolean): Board = {
-    val grouped = arrangement.zipWithIndex groupBy { _._1 }
+    val grouped = (arrangement.zipWithIndex groupBy { _._1 }).withDefaultValue(Seq())
     
     val own = HashSet((grouped('1') map { t => posToCoord(t._2) }): _*)
     val other = HashSet(grouped('2') map { t => posToCoord(t._2) }: _*)

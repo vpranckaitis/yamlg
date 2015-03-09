@@ -31,30 +31,45 @@ object Main {
     //Benchmark.benchmarkLoops
     
     val board = Board("1111000011110000111100000000000000000000000022220000222200002222")
+    val b1 = Board("1111000011110000111100000000000000000000000000000000000000000000")
+    val b2 = Board("0000000000000000000000000000000000000000000011110000111100001111")
+    val b3 = Board("1111000011110000111100000000000000000000000000000000000000000002")
     
     val input = NeuralNetwork.boardToVector(board)
+    
+    println(b1.score)
+    
+    NeuralNetwork.learn(List((NeuralNetwork.boardToVector(b1), 0), (NeuralNetwork.boardToVector(b2), 1)))
+    
+    println(b1.score)
     
     println(NeuralNetwork.score(board))
     
     val alphaBeta = AlphaBetaMemoizedPruning()
     
-    def bubbleUp(b: Board, t: Board): Board = if (b != t && b.parent != null && b.parent != t) bubbleUp(b.parent, t) else b 
+    def bubbleUp(b: Board, t: Board): Board = if (b != t && b.parent != null && b.parent != t) { println(b.toString ++ "**") 
+      bubbleUp(b.parent, t)
+    } else b 
     
     def rec (b: Board) {
       val (_, bestBoard) = alphaBeta.explore(b, 3)
       val t = bubbleUp(bestBoard, b)
-      println(t)
+      println(t.score)
+      //println(t)
       val enemy = t.reverse
       val (_, bestBoard1) = alphaBeta.explore(enemy, 3)
       val t1 = bubbleUp(bestBoard1, enemy)
+      //println(bestBoard1.reverse.toString ++ "**")
+      //println(bestBoard1.parent.reverse.toString ++ "**")
+      //println(bestBoard1.parent.parent.reverse.toString ++ "**")
       println(t1.reverse)
       
       //Thread.sleep(250)
       rec(t1.reverse)
     }
     
-    rec(board)
+    Thread.sleep(1000)
     
-    //println(v5.size)
+    rec(b3)
   }
 }

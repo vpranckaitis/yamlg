@@ -20,8 +20,8 @@
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\com.chuusai\shapeless_2.11\jars\shapeless_2.11-1.2.4.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\io.spray\spray-can_2.11\bundles\spray-can_2.11-1.3.1.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\io.spray\spray-io_2.11\bundles\spray-io_2.11-1.3.1.jar"/>
-  <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.scalanlp\breeze_2.11\jars\breeze_2.11-0.10.jar"/>
-  <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.scalanlp\breeze-macros_2.11\jars\breeze-macros_2.11-0.3.1.jar"/>
+  <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.scalanlp\breeze_2.11\jars\breeze_2.11-0.11.1.jar"/>
+  <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.scalanlp\breeze-macros_2.11\jars\breeze-macros_2.11-0.11.1.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\com.github.fommil.netlib\core\jars\core-1.1.2.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\net.sourceforge.f2j\arpack_combined_all\jars\arpack_combined_all-0.1-javadoc.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\net.sourceforge.f2j\arpack_combined_all\jars\arpack_combined_all-0.1.jar"/>
@@ -32,7 +32,7 @@
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.spire-math\spire_2.11\jars\spire_2.11-0.7.4.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.spire-math\spire-macros_2.11\jars\spire-macros_2.11-0.7.4.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.slf4j\slf4j-api\jars\slf4j-api-1.7.5.jar"/>
-  <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.scalanlp\breeze-natives_2.11\jars\breeze-natives_2.11-0.10.jar"/>
+  <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\org.scalanlp\breeze-natives_2.11\jars\breeze-natives_2.11-0.11.1.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\com.github.fommil.netlib\netlib-native_ref-osx-x86_64\jars\netlib-native_ref-osx-x86_64-1.1-natives.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\com.github.fommil.netlib\native_ref-java\jars\native_ref-java-1.1.jar"/>
   <classpathentry kind="lib" path="C:\Users\vpran_000\.ivy2\cache\com.github.fommil\jniloader\jars\jniloader-1.1.jar"/>

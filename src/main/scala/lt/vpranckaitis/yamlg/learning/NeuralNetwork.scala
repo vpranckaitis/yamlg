@@ -16,8 +16,8 @@ object NeuralNetwork {
   val layer1Size = 40
   val outputSize = 1
   
-  val theta1 = DenseMatrix.rand[Double](layer1Size, inputSize + 1, Rand.uniform) * 0.1
-  val theta2 = DenseMatrix.rand[Double](outputSize, layer1Size + 1, Rand.uniform) * 0.1
+  val theta1 = DenseMatrix.rand[Double](layer1Size, inputSize + 1, Rand.uniform) * -0.1
+  val theta2 = DenseMatrix.rand[Double](outputSize, layer1Size + 1, Rand.uniform) * -0.1
   
   def boardToVector(b: Board): DenseVector[Double] = {
     def mapping(s: HashSet[(Int, Int)])(p: Int) = if (s.contains(Board.posToCoord(p))) 1.0 else 0.0

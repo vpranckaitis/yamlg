@@ -44,10 +44,10 @@ object Main {
     val b2 = Board("0000000000000000000000000000000000000000000011110000111100001111", new TargetRectScore)
     val b3 = Board("1111000011110000111100000000000000000000000000000000000000000002", new TargetRectScore)
     val b4 = Board("0000000000000000000101100000000000000111000200110000001100000011")
-    val b5 = Board("0000000000010000000001100000000000000111000200110000001100000011")
+    val b5 = Board("2222000022220000222200000000000000000000000000000000000000000000")
     
     println(b2.isLeaf)
-    println(b5.score)
+    println(b5.isLeaf)
     
     val input = NeuralNetwork.boardToVector(board)
     
@@ -66,12 +66,12 @@ object Main {
     
     
     def rec (b: Board) {
-      val (_, bestBoard) = alphaBeta.explore(b, 3)
+      val (_, _, bestBoard) = alphaBeta.explore(b, 3)
       val t = bubbleUp(bestBoard, b)
       println(t.score)
       println(t)
       val enemy = t.reverse
-      val (_, bestBoard1) = alphaBeta.explore(enemy, 3)
+      val (_, _, bestBoard1) = alphaBeta.explore(enemy, 3)
       val t1 = bubbleUp(bestBoard1, enemy)
       //println(bestBoard1.reverse.toString ++ "**")
       //println(bestBoard1.parent.reverse.toString ++ "**")

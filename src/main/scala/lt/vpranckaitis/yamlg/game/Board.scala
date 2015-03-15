@@ -28,6 +28,13 @@ object Board {
     } yield (x, y)
   }.toSet
   
+  val loseSet = {
+    for {
+      x <- 0 to 3
+      y <- 0 to 2
+    } yield (x, y)
+  }.toSet
+  
   val defaultScoring = new TargetRectScore
   
   def distanceFunction: DistanceFunction = manhattanDistance
@@ -109,7 +116,7 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     (positionSum._1/ pieces, positionSum._2/ pieces)
   }
   
-  lazy val isLeaf = (own == Board.winSet)
+  lazy val isLeaf: Int = if (own == Board.winSet) 1 else if (other == Board.loseSet) -1 else 0
   
   lazy val score = /*NeuralNetwork.score(this)*/ scoring.evaluate(this)
   

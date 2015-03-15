@@ -11,82 +11,82 @@ import lt.vpranckaitis.yamlg.game.Board
 trait Exploration {
   
   type Score = Double
+  type Moves = Int
   
   def canRecall(b: Board, maximize: Boolean): Boolean = false
-  def recall(b: Board, maximize: Boolean): (Score, Board) = (0.0, null)
-  def memoize(b: Board, maximize: Boolean, score: Score, target: Board): Unit = Unit
+  def recall(b: Board, maximize: Boolean): (Score, Moves, Board) = (0.0, 0, null)
+  def memoize(b: Board, maximize: Boolean, score: Score, moves: Moves, target: Board): Unit = Unit
   
   def shouldPrune(alpha: Score, beta: Score): Boolean = false
   
-  def explore(board: Board, depth: Int, maximize: Boolean = true): (Score, Board) = {
+  def explore(board: Board, maxDepth: Int, maximize: Boolean = true): (Score, Moves, Board) = {
     
-    def maxValue(seq: Seq[Board], depth: Int,  alpha: Score, beta: Score): (Score, Board) = {
+    def maxValue(seq: Seq[Board], depth: Int, alpha: Score, beta: Score): (Score, Moves, Board) = {
       @tailrec
-      def maxValueTR(seq: Seq[Board], v: Score, b: Board): (Score, Board) = {
+      def maxValueTR(seq: Seq[Board], s: Score, m: Moves, b: Board): (Score, Moves, Board) = {
         if (seq.isEmpty) {
-          (v, b)
+          (s, m, b)
+        } else if (seq.head.isLeaf == 1) {
+          (Double.MaxValue/2, maxDepth - depth,  seq.head)
         } else {
-          val (v1, b1) = alphaBetaRec(seq.head, depth - 1, Math.max(alpha, v), beta, false)
-          if (shouldPrune(v1, beta)) {
-            (v1, b1)
+          val (s1, m1, b1) = alphaBetaRec(seq.head, depth - 1, Math.max(alpha, s), beta, false)
+          if (shouldPrune(s1, beta)) {
+            (s1, m1, b1)
           } else {
-            maxValueTR(seq.tail, Math.max(v1, v), if (v1 > v) b1 else b)
+            if ((Math.abs(s1 - s) < 1e-6 && m1 < m) || s1 > s)
+              maxValueTR(seq.tail, s1, m1, b1)
+            else
+              maxValueTR(seq.tail, s, m, b)
           }
         }
       }
       
-      maxValueTR(seq, Double.MinValue, seq.head)
+      maxValueTR(seq, Double.MinValue, Int.MaxValue, seq.head)
     }
     
-    def minValue(seq: Seq[Board], depth: Int,  alpha: Score, beta: Score): (Score, Board) = {
+    def minValue(seq: Seq[Board], depth: Int,  alpha: Score, beta: Score): (Score, Moves, Board) = {
       @tailrec
-      def minValueTR(seq: Seq[Board], v: Score, b: Board): (Score, Board) = {
+      def minValueTR(seq: Seq[Board], s: Score, m: Moves, b: Board): (Score, Moves, Board) = {
         if (seq.isEmpty) {
-          (v, b)
+          (s, m, b)
+        } else if (seq.head.isLeaf == 1) {
+          (Double.MaxValue/2, maxDepth - depth,  seq.head)
         } else {
-          val (v1, b1) = alphaBetaRec(seq.head, depth - 1, alpha, Math.min(v, beta), true)
-          if (shouldPrune(alpha, v1)) {
-            (v1, b1)
+          val (s1, m1, b1) = alphaBetaRec(seq.head, depth - 1, alpha, Math.min(s, beta), true)
+          if (shouldPrune(alpha, s1)) {
+            (s1, m1, b1)
           } else {
-            minValueTR(seq.tail, Math.min(v1, v), if (v1 < v) b1 else b)
+            if ((Math.abs(s1 - s) < 1e-6 && m1 > m) || s1 < s)
+              minValueTR(seq.tail, s1, m1, b1)
+            else
+              minValueTR(seq.tail, s, m, b)
           }
         }
       }
       
-      minValueTR(seq, Double.MaxValue, seq.head)
+      minValueTR(seq, Double.MaxValue, Int.MinValue, seq.head)
     }
     
-    def alphaBetaRec(b: Board, depth: Int, alpha: Score, beta: Score, maximize: Boolean): (Score, Board)  = {
-      if (b.isLeaf) {
-        def bubbleUp(b: Board, t: Board): Board = if (b != t && b.parent != null && b.parent != t) {
-          println(b)
-          bubbleUp(b.parent, t) 
-        } else {
-          println(b)
-          b
-        }
-        println(b.toString + " leaf")
-        bubbleUp(b, board)
-        (Double.MaxValue - 1, b)
-      } else if (depth == 0) {
-        memoize(b, maximize, b.score, b)
-        (b.score, b)
+    def alphaBetaRec(b: Board, depth: Int, alpha: Score, beta: Score, maximize: Boolean): (Score, Int, Board)  = {
+      if (depth == 0) {
+        memoize(b, maximize, b.score, maxDepth, b)
+        (b.score, maxDepth, b)
       } else {
         val children = b.getChildren(maximize).toSeq
         
-        val (score, leafBoard) = if (canRecall(b, maximize)) {
+        val (score, moves, leafBoard) = if (canRecall(b, maximize)) {
           recall(b, maximize)
         } else if (maximize) {
           maxValue(children, depth, alpha, beta)
         } else {
           minValue(children, depth, alpha, beta)
         }
-        memoize(b, maximize, score, leafBoard)
-        (score, leafBoard)
+        memoize(b, maximize, score, moves, leafBoard)
+        (score, moves, leafBoard)
       }
     }
     
     println("---------------")
-    alphaBetaRec(board, depth, Double.MinValue, Double.MaxValue, maximize)
+    alphaBetaRec(board, maxDepth, Double.MinValue, Double.MaxValue, maximize)
   }
 }

@@ -18,9 +18,9 @@ class WebApiActor extends HttpServiceActor {
           b
         }
         println("============")
-        println(t1._1)
-        println(t1._2.isLeaf)
-        complete(bubbleUp(t1._2, b1).toString filter { Set('0', '1', '2').contains }) 
+        println(t1)
+        println(t1._3.isLeaf)
+        complete(bubbleUp(t1._3, b1).toString filter { Set('0', '1', '2').contains }) 
       }
     } ~ 
     path("n" / Segment) { b =>

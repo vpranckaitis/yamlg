@@ -28,6 +28,8 @@ object Board {
     } yield (x, y)
   }.toSet
   
+  val defaultScoring = new TargetRectScore
+  
   def distanceFunction: DistanceFunction = manhattanDistance
   
   def distance1(x: Int, y: Int) = distanceFunction(width, height)(x, y)
@@ -42,16 +44,16 @@ object Board {
     everyDistance.reduce(_ + _)
   }
   
-  def apply(arrangement: String): Board = {
-    apply(arrangement, '1', true)
+  def apply(arrangement: String, scoring: Score = defaultScoring): Board = {
+    apply(arrangement, '1', true, scoring)
   }
   
-  def apply(arrangement: String, side: Char, dir: Boolean): Board = {
+  def apply(arrangement: String, side: Char, dir: Boolean, scoring: Score): Board = {
     val grouped = (arrangement.zipWithIndex groupBy { _._1 }).withDefaultValue(Seq())
     
     val own = HashSet((grouped('1') map { t => posToCoord(t._2) }): _*)
     val other = HashSet(grouped('2') map { t => posToCoord(t._2) }: _*)
-    new Board(own, other, (0, 0, 0, 0), null)
+    new Board(own, other, (0, 0, 0, 0), null, scoring)
   }
   
   def posToCoord(p: Int) = (p % width, p / width)
@@ -75,7 +77,7 @@ object Board {
   }
 }
 
-case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], val before: (Int, Int, Int, Int), val parent: Board) {
+case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], val before: (Int, Int, Int, Int), val parent: Board, val scoring: Score) {
   import lt.vpranckaitis.yamlg.game.Board._
   
   def add(xy1: (Int, Int), xy2: (Int, Int)) = (xy1._1 + xy2._1, xy1._2 + xy2._1)
@@ -107,13 +109,15 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     (positionSum._1/ pieces, positionSum._2/ pieces)
   }
   
-  lazy val score = NeuralNetwork.score(this)
+  lazy val isLeaf = (own == Board.winSet)
+  
+  lazy val score = /*NeuralNetwork.score(this)*/ scoring.evaluate(this)
   
   def move(x1: Int, y1: Int)(x2: Int, y2: Int) = {
     if (own.contains((x1, y1))) {
-      new Board(own - Tuple2(x1, y1) + Tuple2(x2, y2), other, (x1, y1, x2, y2), this)
+      new Board(own - Tuple2(x1, y1) + Tuple2(x2, y2), other, (x1, y1, x2, y2), this, scoring)
     } else {
-      new Board(own, other - Tuple2(x1, y1) + Tuple2(x2, y2), (x1, y1, x2, y2), this)
+      new Board(own, other - Tuple2(x1, y1) + Tuple2(x2, y2), (x1, y1, x2, y2), this, scoring)
     }
   }
   
@@ -121,7 +125,7 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     def mirror(x: Int, y: Int) = (width - x - 1, height - y - 1)
     val newOwn = other map { xy => mirror(xy._1, xy._2) }
     val newOther = own map { xy => mirror(xy._1, xy._2) }
-    new Board(newOwn, newOther, (0, 0, 0, 0), null)
+    new Board(newOwn, newOther, (0, 0, 0, 0), null, scoring)
   }
   
   def getChildren(cpuTurn: Boolean = true) = {
@@ -172,7 +176,7 @@ case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], v
     
     val pos = coordToPos(x0, y0)
     val visited = mutable.BitSet(pos)
-    jumpRec(List(pos), visited, Seq())
+    jumpRec(List(pos), visited, Seq()) filterNot { _ == this }
   }
   
   def step(x: Int, y: Int): Seq[Board] = {

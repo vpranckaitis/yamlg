@@ -35,7 +35,7 @@ trait Exploration {
         }
       }
       
-      maxValueTR(seq, Double.MinValue, board)
+      maxValueTR(seq, Double.MinValue, seq.head)
     }
     
     def minValue(seq: Seq[Board], depth: Int,  alpha: Score, beta: Score): (Score, Board) = {
@@ -53,11 +53,22 @@ trait Exploration {
         }
       }
       
-      minValueTR(seq, Double.MaxValue, board)
+      minValueTR(seq, Double.MaxValue, seq.head)
     }
     
     def alphaBetaRec(b: Board, depth: Int, alpha: Score, beta: Score, maximize: Boolean): (Score, Board)  = {
-      if (depth == 0) {
+      if (b.isLeaf) {
+        def bubbleUp(b: Board, t: Board): Board = if (b != t && b.parent != null && b.parent != t) {
+          println(b)
+          bubbleUp(b.parent, t) 
+        } else {
+          println(b)
+          b
+        }
+        println(b.toString + " leaf")
+        bubbleUp(b, board)
+        (Double.MaxValue - 1, b)
+      } else if (depth == 0) {
         memoize(b, maximize, b.score, b)
         (b.score, b)
       } else {
@@ -75,6 +86,7 @@ trait Exploration {
       }
     }
     
+    println("---------------")
     alphaBetaRec(board, depth, Double.MinValue, Double.MaxValue, maximize)
   }
 }

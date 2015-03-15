@@ -10,8 +10,29 @@ class WebApiActor extends HttpServiceActor {
       get {
         val b1 = Board(b)
         val t1 = AlphaBetaMemoizedPruning().explore(b1, 3)
-        def bubbleUp(b: Board, t: Board): Board = if (b != t && b.parent != null && b.parent != t) bubbleUp(b.parent, t) else b 
+        def bubbleUp(b: Board, t: Board): Board = if (b != t && b.parent != null && b.parent != t) {
+          println(b)
+          bubbleUp(b.parent, t) 
+        } else {
+          println(b)
+          b
+        }
+        println("============")
+        println(t1._1)
+        println(t1._2.isLeaf)
         complete(bubbleUp(t1._2, b1).toString filter { Set('0', '1', '2').contains }) 
+      }
+    } ~ 
+    path("n" / Segment) { b =>
+      get {
+        val b1 = Board(b)
+        complete(b1.getChildren(true).toList sortBy { _.score } map { x => x.toString + " " + x.score } mkString "")
+      }
+    } ~
+    path("s" / Segment) { b =>
+      get {
+        val b1 = Board(b)
+        complete(b1.score.toString)
       }
     }
   }

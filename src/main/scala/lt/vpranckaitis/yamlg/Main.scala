@@ -18,6 +18,7 @@ import lt.vpranckaitis.yamlg.exploration.AlphaBetaMemoizedPruning
 import lt.vpranckaitis.yamlg.learning.NeuralNetwork
 import akka.util.Timeout
 import scala.concurrent.duration.Duration
+import lt.vpranckaitis.yamlg.game.TargetRectScore
 
 object Main {
   implicit val system = ActorSystem("yamlg")
@@ -38,22 +39,22 @@ object Main {
     //Benchmark.benchmarkSets
     //Benchmark.benchmarkLoops
     
-    val board = Board("1111000011110000111100000000000000000000000022220000222200002222")
-    val b1 = Board("1111000011110000111100000000000000000000000000000000000000000000")
-    val b2 = Board("0000000000000000000000000000000000000000000011110000111100001111")
-    val b3 = Board("1111000011110000111100000000000000000000000000000000000000000002")
-    val b4 = Board("0000000000000000000011110000111100001111000000000000000020000000")
-    val b5 = Board("0000000000000000000000000000000000011110000111100001111000000000")
+    val board = Board("1111000011110000111100000000000000000000000022220000222200002222", new TargetRectScore)
+    val b1 = Board("1111000011110000111100000000000000000000000000000000000000000000", new TargetRectScore)
+    val b2 = Board("0000000000000000000000000000000000000000000011110000111100001111", new TargetRectScore)
+    val b3 = Board("1111000011110000111100000000000000000000000000000000000000000002", new TargetRectScore)
+    val b4 = Board("0000000000000000000101100000000000000111000200110000001100000011")
+    val b5 = Board("0000000000010000000001100000000000000111000200110000001100000011")
+    
+    println(b2.isLeaf)
+    println(b5.score)
     
     val input = NeuralNetwork.boardToVector(board)
     
-    println(b1.score)
     
     NeuralNetwork.learn(List((NeuralNetwork.boardToVector(b1), 0), (NeuralNetwork.boardToVector(b2), 1)))
     
-    println(b5.score)
-    
-    println(NeuralNetwork.score(board))
+    println(NeuralNetwork.evaluate(board))
     
     val alphaBeta = AlphaBetaMemoizedPruning()
     

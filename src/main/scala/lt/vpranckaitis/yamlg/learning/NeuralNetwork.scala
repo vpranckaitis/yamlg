@@ -1,18 +1,16 @@
 package lt.vpranckaitis.yamlg.learning
 
-import lt.vpranckaitis.yamlg.game.Board
-import breeze.linalg.DenseVector
-import scala.collection.immutable.HashSet
-import breeze.linalg.DenseMatrix
-import breeze.stats.distributions.Rand
-import breeze.numerics.sigmoid
-import breeze.optimize._
-import breeze.math.NormedModule
-import breeze.linalg.reshape._
-import java.lang.Math._
-import lt.vpranckaitis.yamlg.game.Score
+import java.lang.Math.log
 
-object NeuralNetwork extends Score {
+import scala.collection.immutable.HashSet
+
+import breeze.linalg.{DenseMatrix, DenseVector, InjectNumericOps}
+import breeze.numerics.sigmoid
+import breeze.optimize.{DiffFunction, LBFGS}
+import breeze.stats.distributions.Rand
+import lt.vpranckaitis.yamlg.game.Board
+
+object NeuralNetwork {
   val inputSize = Board.width * Board.height * 2
   val layer1Size = 40
   val outputSize = 1
@@ -79,7 +77,7 @@ object NeuralNetwork extends Score {
     theta2 := tt.slice((inputSize + 1) * layer1Size, tt.length).toDenseMatrix.reshape(outputSize, layer1Size + 1)
   }
   
-  override def evaluate(b: Board) = {
+  def evaluate(b: Board) = {
     val biasedInput = DenseVector.vertcat(DenseVector(1.0), boardToVector(b))
     val a2 = DenseVector.vertcat(DenseVector(1.0), sigmoid(theta1 * biasedInput))
     sigmoid(theta2 * a2).apply(0)

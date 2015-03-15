@@ -1,6 +1,6 @@
 package lt.vpranckaitis.yamlg.game
 
-class TargetRectScore extends Score {
+class TargetRectScore extends EvaluationFunction {
   /*
   def toScore(xy: (Int, Int)): Int = {
     val scoreX = if (xy._1 < 7) Math.min(xy._1, 4) else 6

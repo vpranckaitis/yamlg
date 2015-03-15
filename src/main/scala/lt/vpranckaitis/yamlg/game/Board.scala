@@ -51,11 +51,11 @@ object Board {
     everyDistance.reduce(_ + _)
   }
   
-  def apply(arrangement: String, scoring: Score = defaultScoring): Board = {
+  def apply(arrangement: String, scoring: EvaluationFunction = defaultScoring): Board = {
     apply(arrangement, '1', true, scoring)
   }
   
-  def apply(arrangement: String, side: Char, dir: Boolean, scoring: Score): Board = {
+  def apply(arrangement: String, side: Char, dir: Boolean, scoring: EvaluationFunction): Board = {
     val grouped = (arrangement.zipWithIndex groupBy { _._1 }).withDefaultValue(Seq())
     
     val own = HashSet((grouped('1') map { t => posToCoord(t._2) }): _*)
@@ -84,7 +84,7 @@ object Board {
   }
 }
 
-case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], val before: (Int, Int, Int, Int), val parent: Board, val scoring: Score) {
+case class Board(val own: HashSet[(Int, Int)], val other: HashSet[(Int, Int)], val before: (Int, Int, Int, Int), val parent: Board, val scoring: EvaluationFunction) {
   import lt.vpranckaitis.yamlg.game.Board._
   
   def add(xy1: (Int, Int), xy2: (Int, Int)) = (xy1._1 + xy2._1, xy1._2 + xy2._1)

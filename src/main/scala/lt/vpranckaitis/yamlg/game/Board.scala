@@ -35,7 +35,7 @@ object Board {
     } yield (x, y)
   }.toSet
   
-  val defaultScoring = new TargetRectScore
+  val defaultScoring = new RandomizedTargetRectScore
   
   def distanceFunction: DistanceFunction = manhattanDistance
   

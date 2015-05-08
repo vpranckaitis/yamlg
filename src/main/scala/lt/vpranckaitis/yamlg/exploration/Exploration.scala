@@ -86,7 +86,6 @@ trait Exploration {
       }
     }
     
-    println("---------------")
     alphaBetaRec(board, maxDepth, Double.MinValue, Double.MaxValue, maximize)
   }
 }

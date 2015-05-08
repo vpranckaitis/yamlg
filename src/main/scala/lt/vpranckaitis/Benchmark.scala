@@ -5,8 +5,26 @@ import scala.collection.immutable.TreeMap
 import scala.collection.immutable.BitSet
 import scala.collection.immutable.HashSet
 import scala.collection.mutable.TreeSet
+import lt.vpranckaitis.yamlg.exploration.Minimax
+import lt.vpranckaitis.yamlg.game.Board
+import lt.vpranckaitis.yamlg.exploration.Minimax
+import lt.vpranckaitis.yamlg.game.TargetRectScore
+import lt.vpranckaitis.yamlg.exploration.AlphaBetaPruning
+import lt.vpranckaitis.yamlg.exploration.AlphaBetaMemoizedPruning
+import lt.vpranckaitis.yamlg.exploration.AlphaBetaMemoizedPruning
 
 object Benchmark {
+  
+  def main(args: Array[String]) {
+    Thread.sleep(3000)
+    
+    benchmarkLoops
+    
+    benchmarkSets
+    
+    benchmarkExploration
+  }
+  
   def timer(f : () => Any) = {
     val t1 = System.nanoTime()
     f.apply()
@@ -17,6 +35,7 @@ object Benchmark {
   def benchmark(fs: Map[String, () => Any]) {
     val width = (fs.keys map { _.length }).max
     timer(() => Unit)
+    fs map { entry => (entry._1, timer(entry._2))}
     val test = fs map { entry => (entry._1, timer(entry._2))}
     test foreach { entry => 
       val name = entry._1
@@ -76,5 +95,73 @@ object Benchmark {
     val b = TreeMap("For loop" -> forLoop, "While loop" -> whileLoop)
     benchmark(b)
     println
+  }
+  
+  def benchmarkExploration {
+    val b = Board("2222000022220000222200000000000000011110000111100001111000000000", new TargetRectScore())
+    for (repetition <- List(10, 20, 40, 80)) {
+      
+      Thread.sleep(2000)
+      
+      println("Repetition: " + repetition)
+      
+      def minimax =  { () =>
+        for (_ <- 1 to repetition) {
+          Minimax().explore(b, 3)
+        }
+      }
+      
+      def alphaBeta = { () =>
+        for (_ <- 1 to repetition) {
+          AlphaBetaPruning().explore(b, 3)
+        }
+      }
+      
+      def alphaBetaMemoized = { () =>
+        for (_ <- 1 to repetition) {
+          AlphaBetaMemoizedPruning().explore(b, 3)
+        }
+      }
+      
+      val test = TreeMap("Minimax" -> minimax, 
+                         "Alpha-beta pruning" -> alphaBeta, 
+                         "Alpha-beta pruning with memoization" -> alphaBetaMemoized)
+      
+      benchmark(test)
+    }
+  }
+  
+  def benchmarkExploration2 {
+    val b = Board("1010101010101010010101010000000000000000020202022020202002020202", new TargetRectScore())
+    for (repetition <- List(10, 20, 40, 80)) {
+      
+      Thread.sleep(2000)
+      
+      println("Repetition: " + repetition)
+      
+      def minimax =  { () =>
+        for (_ <- 1 to repetition) {
+          Minimax().explore(b, 3)
+        }
+      }
+      
+      def alphaBeta = { () =>
+        for (_ <- 1 to repetition) {
+          AlphaBetaPruning().explore(b, 3)
+        }
+      }
+      
+      def alphaBetaMemoized = { () =>
+        for (_ <- 1 to repetition) {
+          AlphaBetaMemoizedPruning().explore(b, 3)
+        }
+      }
+      
+      val test = TreeMap("Minimax" -> minimax, 
+                         "Alpha-beta pruning" -> alphaBeta, 
+                         "Alpha-beta pruning with memoization" -> alphaBetaMemoized)
+      
+      benchmark(test)
+    }
   }
 }

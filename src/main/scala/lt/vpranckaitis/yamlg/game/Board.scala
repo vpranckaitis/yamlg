@@ -35,7 +35,7 @@ object Board {
     } yield (x, y)
   }.toSet
   
-  val defaultScoring = new RandomizedTargetRectScore
+  val defaultScoring = new NeuralNetworkScore()
   
   def distanceFunction: DistanceFunction = manhattanDistance
   

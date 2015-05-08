@@ -19,12 +19,14 @@ import lt.vpranckaitis.yamlg.learning.NeuralNetwork
 import akka.util.Timeout
 import scala.concurrent.duration.Duration
 import lt.vpranckaitis.yamlg.game.TargetRectScore
+import lt.vpranckaitis.yamlg.service.OpponentServiceActor
 
 object Main {
   implicit val system = ActorSystem("yamlg")
   
   def main(args: Array[String]): Unit = {
-    val webApiActor = system.actorOf(Props[WebApiActor])
+    val opponenentActor = system.actorOf(Props(classOf[OpponentServiceActor]))
+    val webApiActor = system.actorOf(Props(classOf[WebApiActor], opponenentActor))
     
     IO(Http) ! Http.Bind(webApiActor, interface = "0.0.0.0", port = 5555)
     
@@ -34,10 +36,8 @@ object Main {
       }
     })
     
-    //Thread.sleep(3000)
-    
-    //Benchmark.benchmarkSets
-    //Benchmark.benchmarkLoops
+    println(NeuralNetwork.theta1)
+    println(NeuralNetwork.theta2)
     
     val board = Board("1111000011110000111100000000000000000000000022220000222200002222", new TargetRectScore)
     val b1 = Board("1111000011110000111100000000000000000000000000000000000000000000", new TargetRectScore)
@@ -52,7 +52,7 @@ object Main {
     val input = NeuralNetwork.boardToVector(board)
     
     
-    NeuralNetwork.learn(List((NeuralNetwork.boardToVector(b1), 0), (NeuralNetwork.boardToVector(b2), 1)))
+    //NeuralNetwork.learnSupervised(List((NeuralNetwork.boardToVector(board), 0), (NeuralNetwork.boardToVector(b1), 0), (NeuralNetwork.boardToVector(b2), 1)))
     
     println(NeuralNetwork.evaluate(board))
     

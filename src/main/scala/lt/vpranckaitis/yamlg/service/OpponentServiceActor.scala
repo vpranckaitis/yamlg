@@ -7,11 +7,18 @@ import akka.actor.ActorRef
 import akka.actor.Props
 import akka.routing.Router
 import akka.routing.RoundRobinPool
+import com.typesafe.config.ConfigFactory
+import java.io.File
 
 object OpponentServiceActor {
   case class Move(b: dto.Board)
   case class Learn(g: dto.Game)
   case class LearnWork(g: dto.Game)
+  
+  val moveWorkersCount = {
+    val config = ConfigFactory.parseFile(new File("application.conf")).withFallback(ConfigFactory.load())
+    config.getInt("yamlg.concurrency.move-workers-count")
+  }
   
   class LearnWorker(service: OpponentService) extends Actor with ActorLogging {
     def receive = {
@@ -36,7 +43,7 @@ class OpponentServiceActor extends Actor with ActorLogging {
   
   val service = new OpponentService()
   
-  val moveWorker = context.actorOf(RoundRobinPool(5).props(Props(classOf[MoveWorker], service)))
+  val moveWorker = context.actorOf(RoundRobinPool(moveWorkersCount).props(Props(classOf[MoveWorker], service)))
   val learnWorker = context.actorOf(Props(classOf[LearnWorker], service))
   
   def receive = {

@@ -7,6 +7,8 @@ import scala.collection.mutable
 import scala.util.hashing.MurmurHash3
 import lt.vpranckaitis.math.Math.{DistanceFunction, manhattanDistance}
 import lt.vpranckaitis.yamlg.learning.NeuralNetwork
+import com.typesafe.config.ConfigFactory
+import java.io.File
 
 object Board {
   val height = 8
@@ -35,7 +37,10 @@ object Board {
     } yield (x, y)
   }.toSet
   
-  val defaultScoring = new NeuralNetworkScore()
+  val defaultScoring = {
+    val config = ConfigFactory.parseFile(new File("application.conf")).withFallback(ConfigFactory.load())
+    EvaluationFunction(config.getInt("yamlg.scoring"))
+  }
   
   def distanceFunction: DistanceFunction = manhattanDistance
   

@@ -20,6 +20,8 @@ import akka.util.Timeout
 import scala.concurrent.duration.Duration
 import lt.vpranckaitis.yamlg.game.TargetRectScore
 import lt.vpranckaitis.yamlg.service.OpponentServiceActor
+import com.typesafe.config.ConfigFactory
+import java.io.File
 
 object Main {
   implicit val system = ActorSystem("yamlg")
@@ -28,7 +30,12 @@ object Main {
     val opponenentActor = system.actorOf(Props(classOf[OpponentServiceActor]))
     val webApiActor = system.actorOf(Props(classOf[WebApiActor], opponenentActor))
     
-    IO(Http) ! Http.Bind(webApiActor, interface = "0.0.0.0", port = 5555)
+    val config = ConfigFactory.parseFile(new File("application.conf")).withFallback(ConfigFactory.load())
+    
+    val ip = config.getString("yamlg.ip")
+    val port = config.getInt("yamlg.port")
+    
+    IO(Http) ! Http.Bind(webApiActor, interface = ip, port = port)
     
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run() {
@@ -45,9 +52,6 @@ object Main {
     val b3 = Board("1111000011110000111100000000000000000000000000000000000000000002", new TargetRectScore)
     val b4 = Board("0000000000000000000101100000000000000111000200110000001100000011")
     val b5 = Board("2222000022220000222200000000000000000000000000000000000000000000")
-    
-    println(b2.isLeaf)
-    println(b5.isLeaf)
     
     val input = NeuralNetwork.boardToVector(board)
     

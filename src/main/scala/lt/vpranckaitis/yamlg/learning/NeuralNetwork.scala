@@ -8,14 +8,38 @@ import breeze.optimize.{DiffFunction, LBFGS}
 import breeze.stats.distributions.Rand
 import lt.vpranckaitis.yamlg.game.Board
 import scala.annotation.tailrec
+import java.io.ObjectInputStream
+import java.io.FileInputStream
+import java.io.File
+import java.io.ObjectOutputStream
+import java.io.FileOutputStream
 
 object NeuralNetwork {
   val inputSize = Board.width * Board.height * 2
   val layer1Size = 40
   val outputSize = 1
   
-  val theta1 = DenseMatrix.rand[Double](layer1Size, inputSize + 1, Rand.uniform) map { x => 2*x - 1}
-  val theta2 = DenseMatrix.rand[Double](outputSize, layer1Size + 1, Rand.uniform) map { x => 2*x - 1}
+  val matrix1FileName = "m1.obj"
+  val matrix2FileName = "m2.obj"
+  
+  val theta1 = {
+    val file = new File(matrix1FileName)
+    if (file.exists()) {
+      println("loaded serialized matrix")
+      new ObjectInputStream(new FileInputStream(file)).readObject().asInstanceOf[DenseMatrix[Double]]
+    } else {
+      DenseMatrix.rand[Double](layer1Size, inputSize + 1, Rand.uniform) map { x => 2*x - 1}
+    }
+  }
+  val theta2 = {
+    val file = new File(matrix2FileName)
+    if (file.exists()) {
+      println("loaded serialized matrix")
+      new ObjectInputStream(new FileInputStream(file)).readObject().asInstanceOf[DenseMatrix[Double]]
+    } else {
+      DenseMatrix.rand[Double](outputSize, layer1Size + 1, Rand.uniform) map { x => 2*x - 1}
+    }
+  }
   
   val alpha = 0.05
   val lambda = 1.5
@@ -144,6 +168,13 @@ object NeuralNetwork {
     
     theta1 := t1
     theta2 := t2
+    
+    serializeMatrix(theta1, matrix1FileName)
+    serializeMatrix(theta2, matrix2FileName)
+  }
+  
+  private def serializeMatrix(m: Any, fileName: String) {
+    new ObjectOutputStream(new FileOutputStream(new File(fileName))).writeObject(m)
   }
   
   def evaluate(b: Board) = {

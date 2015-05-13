@@ -3,7 +3,8 @@ lazy val commonSettings = Seq(
   name := "yamlg",
   version := "0.1.0",
   scalaVersion := "2.11.5",
-  scalacOptions += "-optimize"
+  scalacOptions += "-optimize",
+  mainClass in assembly := Some("lt.vpranckaitis.yamlg.Main")
 )
 
 lazy val repositories =  Seq(

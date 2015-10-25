@@ -34,7 +34,7 @@ class WebApiActor(service: ActorRef) extends HttpServiceActor {
       put {
         entity(as[dto.Game]) { g =>
           service ! Learn(g)
-          println("learning")
+          println("learning game: " + g.gameId)
           complete("{\"acknowledged\": true}")
         }
       }

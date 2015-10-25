@@ -60,9 +60,8 @@ class OpponentService {
         (reverse(odd), even)
       }
     }
-    println(winner)
-    println(loser)
     NeuralNetwork.learnReinforced(winner, 1)
     NeuralNetwork.learnReinforced(loser, -1) 
+    println("learned game: " + game.gameId)
   }
 }

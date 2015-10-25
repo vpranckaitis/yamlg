@@ -43,54 +43,13 @@ object Main {
       }
     })
     
-    println(NeuralNetwork.theta1)
-    println(NeuralNetwork.theta2)
-    
     val board = Board("1111000011110000111100000000000000000000000022220000222200002222", new TargetRectScore)
     val b1 = Board("1111000011110000111100000000000000000000000000000000000000000000", new TargetRectScore)
     val b2 = Board("0000000000000000000000000000000000000000000011110000111100001111", new TargetRectScore)
-    val b3 = Board("1111000011110000111100000000000000000000000000000000000000000002", new TargetRectScore)
-    val b4 = Board("0000000000000000000101100000000000000111000200110000001100000011")
-    val b5 = Board("2222000022220000222200000000000000000000000000000000000000000000")
     
-    val input = NeuralNetwork.boardToVector(board)
-    
-    
-    //NeuralNetwork.learnSupervised(List((NeuralNetwork.boardToVector(board), 0), (NeuralNetwork.boardToVector(b1), 0), (NeuralNetwork.boardToVector(b2), 1)))
+    NeuralNetwork.learnSupervised(List((NeuralNetwork.boardToVector(board), 0), (NeuralNetwork.boardToVector(b1), 0), (NeuralNetwork.boardToVector(b2), 1)))
     
     println(NeuralNetwork.evaluate(board))
     
-    val alphaBeta = AlphaBetaMemoizedPruning()
-    
-    def bubbleUp(b: Board, t: Board): Board = if (b != t && b.parent != null && b.parent != t) bubbleUp(b.parent, t) else b 
-    def printup(b: Board, t: Board): Unit = if (b != t && b.parent != null && b.parent != t) {
-      println(b.toString + "**")
-      bubbleUp(b.parent, t)
-    }
-    
-    
-    def rec (b: Board) {
-      val (_, _, bestBoard) = alphaBeta.explore(b, 3)
-      val t = bubbleUp(bestBoard, b)
-      println(t.score)
-      println(t)
-      val enemy = t.reverse
-      val (_, _, bestBoard1) = alphaBeta.explore(enemy, 3)
-      val t1 = bubbleUp(bestBoard1, enemy)
-      //println(bestBoard1.reverse.toString ++ "**")
-      //println(bestBoard1.parent.reverse.toString ++ "**")
-      //println(bestBoard1.parent.parent.reverse.toString ++ "**")
-      println(t1.reverse)
-      val t2 = t1.reverse
-      if (t.own != t2.own && t.other != t2.other) {
-        printup(bestBoard1, enemy)
-      }
-      //Thread.sleep(250)
-      rec(t1.reverse)
-    }
-    
-    Thread.sleep(1000)
-    
-    //rec(b4)
   }
 }

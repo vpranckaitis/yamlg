@@ -24,7 +24,6 @@ object OpponentServiceActor {
     def receive = {
       case LearnWork(g) => { 
         service.reinforcedLearning(g)
-        println("finishedLearning")
       }
       case _ => log.warning("unknown message")
     }

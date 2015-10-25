@@ -99,8 +99,6 @@ object NeuralNetwork {
     
     val s = new LBFGS[DenseVector[Double]](maxIter=100, m=3)
     val tt = s.minimize(f, DenseVector.vertcat(theta1.toDenseVector, theta2.toDenseVector))
-    //println(tt)
-    //println(f.valueAt(tt))
     theta1 := tt.slice(0, (inputSize + 1) * layer1Size).toDenseMatrix.reshape(layer1Size, inputSize + 1)
     theta2 := tt.slice((inputSize + 1) * layer1Size, tt.length).toDenseMatrix.reshape(outputSize, layer1Size + 1)
   }
